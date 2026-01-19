@@ -1,0 +1,38 @@
+import { obtenerAsignatura } from '@/lib/data'
+import { Suspense, use } from 'react'
+
+
+async function PaginaAsignatura({ params }) {
+    const { id } = await params
+
+    const promesaAsignatura = obtenerAsignatura(id) // Promesa, no usamos AWAIT
+
+    return (
+        <div>
+            <h1 className='text-4xl'>Asignatura</h1>
+
+            <Suspense fallback={<p className='text-2xl text-blue-400'>Cargando...</p>}>
+                <Asignatura promesaAsignatura={promesaAsignatura} />
+            </Suspense>
+
+        </div>
+    )
+}
+
+export default PaginaAsignatura
+
+
+
+
+
+function Asignatura({ promesaAsignatura }) {
+    const asignatura = use(promesaAsignatura)
+
+    return (
+        <>
+            <p>{asignatura.nombre}</p>
+            <p>{asignatura.profesor}</p>
+            <p>{asignatura.horas_semana}</p>
+        </>
+    )
+}

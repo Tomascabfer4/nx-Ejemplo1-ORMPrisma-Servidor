@@ -1,31 +1,28 @@
-import { PrismaClient } from "@prisma/client";
+import ListaGrupos from '@/components/grupos/lista'
+import InsertarGrupo from '@/components/grupos/insertar'
+import { obtenerGrupos } from '@/lib/data'
+import { Suspense } from 'react'
 
-async function PaginaGrupos() {
-  const prisma = new PrismaClient();
 
-  const grupos = await prisma.grupo.findMany();
+function PaginaGrupos() {
 
-  console.log(grupos);
+    const promesaGrupos = obtenerGrupos()  // Promesa, no usamos AWAIT
 
-  return (
-    <div>
-      <h1 className="text-4xl">Grupos</h1>
+    return (
+        <div>
+            <h1 className='text-4xl'>Grupos</h1>
 
-      {grupos.map((grupo) => (
-        <Grupo grupo={grupo} key={grupo.id} />
-      ))}
-    </div>
-  );
+            <InsertarGrupo />
+
+            <Suspense fallback={<p className='text-2xl text-blue-400'>Cargando...</p>}>
+                <ListaGrupos
+                    promesaGrupos={promesaGrupos}
+                />
+            </Suspense>
+        </div>
+    )
 }
 
-export default PaginaGrupos;
+export default PaginaGrupos
 
-function Grupo(props) {
-  return (
-    <div>
-      <p>Nombre de grupo: {props.grupo.nombre}</p>
-      <p>Tutor del grupo: {props.grupo.tutor}</p>
-      <p>Aula: {props.grupo.aula}</p>
-    </div>
-  );
-}
+
