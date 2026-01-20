@@ -10,7 +10,7 @@
     "seed": "node prisma/seed.mjs"
   },
   "dependencies": {
-    "@prisma/client": "^6.19.1",
+    "@prisma/client": "^6.19.2",
     "lucide-react": "^0.562.0",
     "next": "16.1.1",
     "react": "19.2.3",
@@ -20,7 +20,7 @@
     "@tailwindcss/postcss": "^4",
     "eslint": "^9",
     "eslint-config-next": "16.1.1",
-    "prisma": "^6.19.1",
+    "prisma": "^6.19.2",
     "tailwindcss": "^4"
   }
 }
