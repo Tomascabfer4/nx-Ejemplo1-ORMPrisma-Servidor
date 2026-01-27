@@ -1,10 +1,9 @@
 generator client {
   provider = "prisma-client-js"
-  engineType = "binary"
 }
 
 datasource db {
-  provider = "mysql"
+  provider = "postgresql"
   url      = env("DATABASE_URL")
 }
 
@@ -13,6 +12,8 @@ model Grupo {
   nombre String @unique
   tutor  String
   aula   String
+
+  estudiantes Estudiante[]
 }
 
 model Estudiante {
@@ -21,6 +22,10 @@ model Estudiante {
   fecha_nacimiento DateTime
   foto             String?
   tutor_legal      String
+
+  asignaturas Asignatura[]
+  grupoId     Int?
+  grupo       Grupo?       @relation(fields: [grupoId], references: [id])
 }
 
 model Asignatura {
@@ -28,4 +33,6 @@ model Asignatura {
   nombre       String
   profesor     String?
   horas_semana Int
+
+  estudiantes Estudiante[]
 }

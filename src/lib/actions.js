@@ -3,135 +3,229 @@
 import prisma from "@/lib/prisma";
 import { revalidatePath } from "next/cache";
 
-// Grupo
+// ------------------------------ GRUPOS ------------------------------
 
-export async function insertarGrupo(formData) {
+export async function insertarGrupo(prevState, formData) {
   const nombre = formData.get("nombre");
   const tutor = formData.get("tutor");
   const aula = formData.get("aula");
 
-  await prisma.grupo.create({
-    data: {
-      nombre,
-      tutor,
-      aula,
-    },
-  });
-  revalidatePath("/grupos");
+  try {
+    await prisma.grupo.create({
+      data: {
+        nombre,
+        tutor,
+        aula,
+      },
+    });
+    revalidatePath("/grupos");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    // return { error: error.message }
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function modificarGrupo(formData) {
+export async function modificarGrupo(prevState, formData) {
   const id = Number(formData.get("id"));
   const nombre = formData.get("nombre");
   const tutor = formData.get("tutor");
   const aula = formData.get("aula");
 
-  await prisma.grupo.update({
-    where: { id },
-    data: {
-      nombre,
-      tutor,
-      aula,
-    },
-  });
-  revalidatePath("/grupos");
+  try {
+    await prisma.grupo.update({
+      where: { id },
+      data: {
+        nombre,
+        tutor,
+        aula,
+      },
+    });
+    revalidatePath("/grupos");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function eliminarGrupo(formData) {
+export async function eliminarGrupo(prevState, formData) {
   const id = Number(formData.get("id"));
 
-  await prisma.grupo.delete({
-    where: { id },
-  });
-  revalidatePath("/grupos");
+  try {
+    await prisma.grupo.delete({
+      where: { id },
+    });
+    revalidatePath("/grupos");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-// Asignatura
+// ------------------------------ ASIGNATURAS ------------------------------
 
-export async function insertarAsignatura(formData) {
+export async function insertarAsignatura(prevState, formData) {
   const nombre = formData.get("nombre");
   const profesor = formData.get("profesor");
   const horas_semana = Number(formData.get("horas_semana"));
 
-  await prisma.asignatura.create({
-    data: {
-      nombre,
-      profesor,
-      horas_semana,
-    },
-  });
-  revalidatePath("/asignaturas");
+  try {
+    await prisma.asignatura.create({
+      data: {
+        nombre,
+        profesor,
+        horas_semana,
+      },
+    });
+    revalidatePath("/asignaturas");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function modificarAsignatura(formData) {
+export async function modificarAsignatura(prevState, formData) {
   const id = Number(formData.get("id"));
   const nombre = formData.get("nombre");
   const profesor = formData.get("profesor");
   const horas_semana = Number(formData.get("horas_semana"));
 
-  await prisma.asignatura.update({
-    where: { id },
-    data: {
-      nombre,
-      profesor,
-      horas_semana,
-    },
-  });
-  revalidatePath("/asignaturas");
+  try {
+    await prisma.asignatura.update({
+      where: { id },
+      data: {
+        nombre,
+        profesor,
+        horas_semana,
+      },
+    });
+    revalidatePath("/asignaturas");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function eliminarAsignatura(formData) {
+export async function eliminarAsignatura(prevState, formData) {
   const id = Number(formData.get("id"));
 
-  await prisma.asignatura.delete({
-    where: { id },
-  });
-  revalidatePath("/asignaturas");
+  try {
+    await prisma.asignatura.delete({
+      where: { id },
+    });
+    revalidatePath("/asignaturas");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-// Estudiante
+// ------------------------------ ESTUDIANTES ------------------------------
 
-export async function insertarEstudiante(formData) {
+export async function insertarEstudiante(prevState, formData) {
   const nombre = formData.get("nombre");
   const tutor_legal = formData.get("tutor_legal");
   const fecha_nacimiento = new Date(formData.get("fecha_nacimiento"));
   const foto = formData.get("foto");
 
-  await prisma.estudiante.create({
-    data: {
-      nombre,
-      tutor_legal,
-      fecha_nacimiento,
-      foto,
-    },
+  // GRUPO - ESTUDIANTE (1:N)
+  const grupoId = formData.get("grupoId")
+    ? Number(formData.get("grupoId"))
+    : null; // Este valor puede ser nulo
+
+  // ESTUDIANTE - ASIGNATURAS (N:M)
+  // Array con IDs de todas las asignaturas. Formato: [ {id: 1}, {id: 2}, ...]
+  const asignaturasIDs = await prisma.asignatura.findMany({
+    select: { id: true },
   });
-  revalidatePath("/estudiantes");
+
+  const connect = asignaturasIDs.filter(
+    (asignatura) => formData.get(asignatura.id) !== null,
+  );
+  const asignaturas = { connect };
+
+  try {
+    await prisma.estudiante.create({
+      data: {
+        nombre,
+        tutor_legal,
+        fecha_nacimiento,
+        foto,
+        grupoId,
+        asignaturas,
+      },
+    });
+    revalidatePath("/estudiantes");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function modificarEstudiante(formData) {
+export async function modificarEstudiante(prevState, formData) {
   const id = Number(formData.get("id"));
   const nombre = formData.get("nombre");
   const tutor_legal = formData.get("tutor_legal");
   const fecha_nacimiento = new Date(formData.get("fecha_nacimiento"));
   const foto = formData.get("foto");
 
-  await prisma.estudiante.update({
-    where: { id },
-    data: {
-      nombre,
-      tutor_legal,
-      fecha_nacimiento,
-      foto,
-    },
+  // GRUPO - ESTUDIANTE (1:N)
+  const grupoId = formData.get("grupoId")
+    ? Number(formData.get("grupoId"))
+    : null; // Este valor puede ser nulo
+
+  // ESTUDIANTE - ASIGNATURAS  (N:M)
+  // Array con IDs de todas las asignaturas. Formato: [ {id: 1}, {id: 2}, ...]
+  const asignaturasIDs = await prisma.asignatura.findMany({
+    select: { id: true },
   });
-  revalidatePath("/estudiantes");
+
+  const connect = asignaturasIDs.filter(
+    (asignatura) => formData.get(asignatura.id) !== null,
+  );
+  const disconnect = asignaturasIDs.filter(
+    (asignatura) => formData.get(asignatura.id) === null,
+  );
+  const asignaturas = { connect, disconnect };
+
+  try {
+    await prisma.estudiante.update({
+      where: { id },
+      data: {
+        nombre,
+        tutor_legal,
+        fecha_nacimiento,
+        foto,
+        grupoId,
+        asignaturas,
+      },
+    });
+    revalidatePath("/estudiantes");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
 
-export async function eliminarEstudiante(formData) {
+export async function eliminarEstudiante(prevState, formData) {
   const id = Number(formData.get("id"));
 
-  await prisma.estudiante.delete({
-    where: { id },
-  });
-  revalidatePath("/estudiantes");
+  try {
+    await prisma.estudiante.delete({
+      where: { id },
+    });
+    revalidatePath("/estudiantes");
+    return { success: "Operación realizada con éxito" };
+  } catch (error) {
+    console.log(error);
+    return { error: error.message.split("\n").pop() };
+  }
 }
